@@ -1,9 +1,10 @@
 from flask import Flask, jsonify, request, abort
-from flask_cors import CORS
 import sqlite3
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+
 # Database initialization
 def init_db():
     conn = sqlite3.connect('tasks.db')
@@ -19,11 +20,6 @@ def init_db():
 # Initialize the database
 init_db()
 
-# Route for the root URL
-@app.route('/')
-def home():
-    return "Welcome to the Task Management API!"
-
 # API to get all tasks
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
@@ -32,7 +28,8 @@ def get_tasks():
     c.execute("SELECT * FROM tasks")
     tasks = c.fetchall()
     conn.close()
-    return jsonify(tasks)
+    tasks_with_ids = [{"id": task[0], "title": task[1], "description": task[2], "completed": task[3]} for task in tasks]
+    return jsonify(tasks_with_ids)
 
 # API to add a new task
 @app.route('/tasks', methods=['POST'])
@@ -48,8 +45,36 @@ def add_task():
     c.execute("INSERT INTO tasks (title, description, completed) VALUES (?, ?, ?)",
               (title, description, completed))
     conn.commit()
+    task_id = c.lastrowid
     conn.close()
-    return jsonify({'status': 'Task added'}), 201
+    return jsonify({"id": task_id, "title": title, "description": description, "completed": completed}), 201
+
+# API to update a task
+@app.route('/tasks/<int:id>', methods=['PUT'])
+def update_task(id):
+    if not request.json:
+        abort(400)
+    title = request.json.get('title')
+    description = request.json.get('description')
+    completed = request.json.get('completed')
+
+    conn = sqlite3.connect('tasks.db')
+    c = conn.cursor()
+    c.execute("UPDATE tasks SET title = ?, description = ?, completed = ? WHERE id = ?",
+              (title, description, completed, id))
+    conn.commit()
+    conn.close()
+    return jsonify({"id": id, "title": title, "description": description, "completed": completed})
+
+# API to delete a task
+@app.route('/tasks/<int:id>', methods=['DELETE'])
+def delete_task(id):
+    conn = sqlite3.connect('tasks.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM tasks WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "Task deleted"})
 
 if __name__ == '__main__':
     app.run(debug=True)
