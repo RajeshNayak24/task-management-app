@@ -11,6 +11,7 @@ const TaskForm = ({ onSubmit, initialTask = { title: '', description: '' } }) =>
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(task);
+    setTask({ title: '', description: '' });
   };
 
   return (
