@@ -20,12 +20,30 @@ def init_db():
 # Initialize the database
 init_db()
 
+# Reorder IDs sequentially
+def reorder_ids():
+    conn = sqlite3.connect('tasks.db')
+    c = conn.cursor()
+
+    # Fetch all tasks ordered by the current ID
+    c.execute("SELECT * FROM tasks ORDER BY id")
+    tasks = c.fetchall()
+
+    # Update IDs sequentially
+    for index, task in enumerate(tasks, start=1):
+        c.execute("UPDATE tasks SET id = ? WHERE id = ?", (index, task[0]))
+
+    # Reset the auto-increment counter
+    c.execute("DELETE FROM sqlite_sequence WHERE name='tasks'")
+    conn.commit()
+    conn.close()
+
 # API to get all tasks
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     conn = sqlite3.connect('tasks.db')
     c = conn.cursor()
-    c.execute("SELECT * FROM tasks")
+    c.execute("SELECT * FROM tasks ORDER BY id")
     tasks = c.fetchall()
     conn.close()
     tasks_with_ids = [{"id": task[0], "title": task[1], "description": task[2], "completed": task[3]} for task in tasks]
@@ -73,6 +91,8 @@ def delete_task(id):
     c = conn.cursor()
     c.execute("DELETE FROM tasks WHERE id = ?", (id,))
     conn.commit()
+    # Reorder the remaining IDs
+    reorder_ids()
     conn.close()
     return jsonify({"status": "Task deleted"})
 
