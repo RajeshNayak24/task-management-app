@@ -1,4 +1,3 @@
-// src/pages/Home.js
 import React, { useState, useEffect } from 'react';
 import TaskForm from '../components/TaskForm';
 import TaskList from '../components/TaskList';
@@ -10,29 +9,35 @@ const Home = () => {
 
   useEffect(() => {
     fetchTasks().then((data) => {
-      console.log('Fetched tasks:', data); // Debugging: Log fetched tasks
+      console.log('Fetched tasks:', data);
       setTasks(data);
     });
   }, []);
 
   const handleAddTask = (task) => {
     addTask(task).then((newTask) => {
-      console.log('Added task:', newTask); // Debugging: Log added task
+      console.log('Added task:', newTask);
       setTasks([...tasks, newTask]);
     });
   };
 
   const handleEditTask = (task) => {
+    console.log('Editing task:', task); // Debugging
+    setEditingTask(task); 
+  };
+
+  const handleUpdateTask = (task) => {
+    console.log('Updating task:', task); // Debugging
     updateTask(task).then((updatedTask) => {
-      console.log('Updated task:', updatedTask); // Debugging: Log updated task
+      console.log('Updated task:', updatedTask);
       setTasks(tasks.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+      setEditingTask(null); 
     });
-    setEditingTask(null);
   };
 
   const handleDeleteTask = (id) => {
     deleteTask(id).then(() => {
-      console.log('Deleted task with ID:', id); // Debugging: Log deleted task
+      console.log('Deleted task with ID:', id);
       setTasks(tasks.filter((t) => t.id !== id));
     });
   };
@@ -41,12 +46,12 @@ const Home = () => {
     <div className="container mt-4">
       <h1 className="mb-4">Task Management</h1>
       <TaskForm
-        onSubmit={editingTask ? handleEditTask : handleAddTask}
-        initialTask={editingTask || { title: '', description: '' }}
+        onSubmit={editingTask ? handleUpdateTask : handleAddTask}
+        initialTask={editingTask || { title: '', description: '' }} 
       />
       <TaskList
         tasks={tasks}
-        onEdit={setEditingTask}
+        onEdit={handleEditTask} 
         onDelete={handleDeleteTask}
       />
     </div>
