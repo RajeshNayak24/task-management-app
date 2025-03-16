@@ -4,7 +4,7 @@ const TaskList = ({ tasks, onEdit, onDelete }) => {
   return (
     <div className="list-group">
       {tasks.map((task) => (
-        <div key={task.id} className="list-group-item mb-3"> {/* Add key here */}
+        <div key={task.id} className="list-group-item mb-3">
           <div className="d-flex justify-content-between align-items-center">
             <div>
               <h5>{task.title}</h5>

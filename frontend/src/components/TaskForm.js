@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const TaskForm = ({ onSubmit, initialTask = { title: '', description: '' } }) => {
   const [task, setTask] = useState(initialTask);
+
+  useEffect(() => {
+    setTask(initialTask);
+  }, [initialTask]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -10,8 +14,9 @@ const TaskForm = ({ onSubmit, initialTask = { title: '', description: '' } }) =>
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(task);
-    setTask({ title: '', description: '' });
+    console.log('Form submitted with task:', task); // Debugging
+    onSubmit(task); // Call the onSubmit function passed from the parent
+    setTask({ title: '', description: '' }); // Reset the form fields
   };
 
   return (
